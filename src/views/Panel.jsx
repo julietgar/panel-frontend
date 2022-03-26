@@ -1,69 +1,114 @@
 import React from "react";
-//import PanelComp from "../components/Panel";
-import { Container, Col, Row, Navbar, Nav, Table } from 'react-bootstrap';
+import axios from "axios";
+import Spinner from "../components/Spinner";
+import { Container, Col, Row, Navbar, Nav, Table, Button, Badge, Dropdown } from 'react-bootstrap';
 
 const Panel = () => {
+
+  const [machineMetrics, setMachineMetrics] = React.useState({"metrics": []});
+  const [isLoading, setIsLoading] = React.useState(false);
+
+  let totalRows = 0;
+  let statesColor = {
+    'On - loaded': 'success',
+    'On - idle': 'info',
+    'On - unloaded': 'warning',
+    'Off': 'danger',
+  };
+
+  function getAxiosMachineMetrics (totalRowsToAdd = 0, machineName = 'pump') {
+    setIsLoading(true);
+  
+    totalRows = totalRowsToAdd > 0 ? machineMetrics.metrics.length + totalRowsToAdd : 5;
+
+    axios
+      .get("/api/machines/" + machineName + "/metric?current_quantity_rows=" + totalRows)
+      .then((response) => {
+        setMachineMetrics(response.data); 
+        setIsLoading(false);
+      });
+  }
+
+  React.useEffect(() => {
+    getAxiosMachineMetrics(5);
+  }, []);
+
+  const renderUI = (
+    <div>
+      {/* Second title */}
+      <Row lg={12} className="mt-5 justify-content-md-center">
+        <Col md="auto"><h3><Badge bg={statesColor[machineMetrics.last_state]}>{machineMetrics.last_state}</Badge></h3></Col>
+      </Row>
+
+      {/* Table */}
+      <Row lg={12} className="mt-5">
+        <Col>
+          <Table striped bordered hover size="sm">
+            <thead>
+              <tr>
+                <th>Datetime</th>
+                <th>Value (Amps)</th>
+                <th>Operating Load %</th>
+                <th>State</th>
+              </tr>
+            </thead>
+            <tbody>
+              {machineMetrics.metrics.map((metric, id) => (
+                <tr key={id}>
+                  <td>{metric.datetime_created}</td>
+                  <td>{metric.psum_avg_value}</td>
+                  <td>{metric.operating_load_percentage}</td>
+                  <td>{metric.state}</td>
+                </tr>
+              ))}
+              <tr>
+                {machineMetrics.total_rows !== machineMetrics.metrics.length && <td colSpan={4}><Button variant="link" onClick={() => getAxiosMachineMetrics(5)}>See more...</Button></td>}
+              </tr>
+            </tbody>
+          </Table>
+        </Col>
+      </Row>
+    </div>
+  );
+
   return (
     <>
     {/* Main title */}
     <Row lg={12}>
-      <Col><h1>Machine 1 Dashboard</h1></Col>
+      <Col xs={12} md={8}><h1>{machineMetrics.machine_name} Dashboard</h1></Col>
+      <Col xs={12} md={4} className="d-flex justify-content-end" >
+      <Dropdown>
+        <Dropdown.Toggle variant="secondary" id="dropdown-basic">
+          Machines
+        </Dropdown.Toggle>
+
+        <Dropdown.Menu>
+          <Dropdown.Item onClick={() => getAxiosMachineMetrics()} href="#">Pump</Dropdown.Item>
+          <Dropdown.Item href="#">Compressor</Dropdown.Item>
+        </Dropdown.Menu>
+      </Dropdown>
+      </Col>
     </Row>
 
     {/* Options */}
-    <Row lg={12} className="mt-3">
-      <Col>
-        <Navbar bg="light" variant="light">
-          <Container>
-              <Nav className="me-auto">
-                <Nav.Link href="#home">Home</Nav.Link>
-                <Nav.Link href="#features">Features</Nav.Link>
-                <Nav.Link href="#pricing">Pricing</Nav.Link>
-              </Nav>
-          </Container>
-        </Navbar>
-      </Col>
-    </Row>
+    
+    <Navbar className="mt-3" collapseOnSelect expand="lg" bg="light" variant="light">
+      <Container>
+        <Navbar.Brand href="#home">Refresh each:</Navbar.Brand>
+        <Navbar.Toggle aria-controls="responsive-navbar-nav" />
+        <Navbar.Collapse id="responsive-navbar-nav">
+          <Nav className="me-auto">
+            <Nav.Link href="#">1min</Nav.Link>
+            <Nav.Link href="#">5min</Nav.Link>
+            <Nav.Link href="#">10min</Nav.Link>
+            <Nav.Link onClick={() => getAxiosMachineMetrics()} href="#">Now</Nav.Link>
+            <Nav.Link href="#">Export <i className="bi-alarm"></i></Nav.Link>
+          </Nav>
+        </Navbar.Collapse>
+      </Container>
+    </Navbar>
 
-    {/* Second title */}
-    <Row lg={12} className="mt-5 justify-content-md-center">
-      <Col md="auto"><h3>ON - LOADED</h3></Col>
-    </Row>
-
-    {/* Table */}
-    <Row lg={12} className="mt-5">
-      <Col>
-        <Table striped bordered hover size="sm">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>First Name</th>
-              <th>Last Name</th>
-              <th>Username</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Mark</td>
-              <td>Otto</td>
-              <td>@mdo</td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Jacob</td>
-              <td>Thornton</td>
-              <td>@fat</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td colSpan={2}>Larry the Bird</td>
-              <td>@twitter</td>
-            </tr>
-          </tbody>
-        </Table>
-      </Col>
-    </Row>
+    {isLoading ? <Spinner /> : renderUI}
     </>
   );
 };
