@@ -41,7 +41,7 @@ const Panel = () => {
     getAxiosMachineMetrics(5);
 
     const interval = setInterval(() => {
-        getAxiosMachineMetrics(5);
+        getAxiosMachineMetrics();
     }, millisecondsTime);
   
     return () => clearInterval(interval);
