@@ -1,12 +1,12 @@
 import React from "react";
-import Panel from "./views/Panel";
+import Main from "./views/Main";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 const MainRoutes = () => {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Panel />} />
+        <Route path="/" element={<Main />} />
       </Routes>
     </BrowserRouter>
   );
