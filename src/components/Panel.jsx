@@ -26,14 +26,17 @@ const Panel = () => {
       .then((response) => {
         setMachineMetrics(response.data); 
         setIsLoading(false);
-      });
+      })
+      .catch(() => {
+        setIsLoading(false);
+     });
   }
 
   React.useEffect(() => {
     getAxiosMachineMetrics(5);
   }, []);
 
-  const renderUI = (
+  const metricsUI = (
     <div>
       {/* Second title */}
       <Row lg={12} className="mt-5 justify-content-md-center">
@@ -70,6 +73,14 @@ const Panel = () => {
       </Row>
     </div>
   );
+
+  const noDataUI = (
+    <Row lg={12} className="mt-5 justify-content-md-center">
+      <Col md="auto"><h3><Badge bg="secondary">There is not data to show</Badge></h3></Col>
+    </Row>
+  );
+
+  const renderUI = machineMetrics.metrics.length === 0 ? noDataUI : metricsUI;
 
   return (
     <>
