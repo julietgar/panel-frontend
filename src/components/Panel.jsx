@@ -4,9 +4,10 @@ import Spinner from "../components/Spinner";
 import { Container, Col, Row, Navbar, Nav, Table, Button, Badge, Dropdown } from 'react-bootstrap';
 
 const Panel = () => {
-
   const [machineMetrics, setMachineMetrics] = React.useState({"metrics": []});
   const [isLoading, setIsLoading] = React.useState(false);
+  const [timeOptionSelected, setTimeOptionSelected] = React.useState(1);
+  const [millisecondsTime, setMillisecondsTime] = React.useState(60000);
 
   let totalRows = 0;
   let statesColor = {
@@ -16,13 +17,17 @@ const Panel = () => {
     'Off': 'danger',
   };
 
+  function changeIntervalTimeMinutes(minutesSelected = 1) {
+    setTimeOptionSelected(minutesSelected);
+    setMillisecondsTime(minutesSelected * 60 * 1000);
+  }
+
   function getAxiosMachineMetrics (totalRowsToAdd = 0, machineName = 'pump') {
     setIsLoading(true);
-  
     totalRows = totalRowsToAdd > 0 ? machineMetrics.metrics.length + totalRowsToAdd : 5;
 
     axios
-      .get("/api/machines/" + machineName + "/metric?current_quantity_rows=" + totalRows)
+      .get("http://localhost/api/machines/" + machineName + "/metric?current_quantity_rows=" + totalRows)
       .then((response) => {
         setMachineMetrics(response.data); 
         setIsLoading(false);
@@ -34,7 +39,15 @@ const Panel = () => {
 
   React.useEffect(() => {
     getAxiosMachineMetrics(5);
-  }, []);
+
+    const interval = setInterval(() => {
+        getAxiosMachineMetrics(5);
+
+        console.log('>> millisecondsTime: '+millisecondsTime+' | timeOptionSelected: '+timeOptionSelected+'min');
+    }, millisecondsTime);
+  
+    return () => clearInterval(interval);
+  }, [millisecondsTime]);
 
   const metricsUI = (
     <div>
@@ -109,9 +122,9 @@ const Panel = () => {
         <Navbar.Toggle aria-controls="responsive-navbar-nav" />
         <Navbar.Collapse id="responsive-navbar-nav">
           <Nav className="me-auto">
-            <Nav.Link href="#">1min</Nav.Link>
-            <Nav.Link href="#">5min</Nav.Link>
-            <Nav.Link href="#">10min</Nav.Link>
+            <Nav.Link className={timeOptionSelected === 1 ? 'underline-menu-option' : ''} onClick={() => changeIntervalTimeMinutes()} href="#">1min</Nav.Link>
+            <Nav.Link className={timeOptionSelected === 5 ? 'underline-menu-option' : ''} onClick={() => changeIntervalTimeMinutes(5)} href="#">5min</Nav.Link>
+            <Nav.Link className={timeOptionSelected === 10 ? 'underline-menu-option' : ''} onClick={() => changeIntervalTimeMinutes(10)} href="#">10min</Nav.Link>
             <Nav.Link onClick={() => getAxiosMachineMetrics()} href="#">Now</Nav.Link>
             <Nav.Link href="#">Export <i className="bi-alarm"></i></Nav.Link>
           </Nav>
