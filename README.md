@@ -9,8 +9,6 @@ Please, follow the insctructions that are detailed below:
 Clone the project in your local enviroment. Run the following commands to do it:
 `git clone https://github.com/julietgar/panel-frontend.git`
 
-Take into account that the **last changes** made are on the `dev` branch. Change your branch to `dev`.
-
 ### Install packages
 `npm install` or `yarn install`
 
