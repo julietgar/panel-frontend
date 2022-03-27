@@ -1,15 +1,15 @@
 import React from "react";
-import Panel from "../views/Panel";
-import { BrowserRouter as Router, Route } from "react-router-dom";
+import Main from "./views/Main";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-const Routes = () => {
+const MainRoutes = () => {
   return (
-    <>
-      <Router>
-          <Route exact path="/" component={Panel} />
-      </Router>
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Main />} />
+      </Routes>
+    </BrowserRouter>
   );
 };
 
-export default Routes;
+export default MainRoutes;
